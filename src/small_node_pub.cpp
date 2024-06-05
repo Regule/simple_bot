@@ -40,7 +40,7 @@ void SmallNodePublisher::timer_callback_(){
 
 int main(int argc, char **argv){
   rclcpp::init(argc, argv);
-  auto node = SmallNodePublisher::make_shared("small_publisher");
+  auto node = std::make_shared<SmallNodePublisher>();
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
