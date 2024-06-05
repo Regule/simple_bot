@@ -9,7 +9,7 @@
 namespace chr = std::chrono_literals;
 
 
-class SmallNodePublisher{
+class SmallNodePublisher: public rclcpp::Node{
 
 public:
   SmallNodePublisher()
@@ -35,5 +35,13 @@ void SmallNodePublisher::timer_callback_(){
   counter_++;
   message.data = str_stream.str();
   RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
-  this->publisher_
+  this->publisher_->publish(message);
+}
+
+int main(int argc, char **argv){
+  rclcpp::init(argc, argv);
+  auto node = SmallNodePublisher::make_shared("small_publisher")
+  rclcpp::spin(node);
+  rclcpp::shutdown();
+  return 0;
 }
