@@ -8,19 +8,25 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
 set(dependencies
   rclcpp
+  std_msgs
 )
 
 add_executable(tiny_node src/tiny_node.cpp)
+add_executable(small_node_pub src/small_node_pub.cpp)
+
 ament_target_dependencies(tiny_node ${dependencies})
+ament_target_dependencies(small_node_pub ${dependencies})
 
 install(TARGETS
   tiny_node
+  small_node_pub
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
