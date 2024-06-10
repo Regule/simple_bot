@@ -1,3 +1,5 @@
+<!-- sudo apt-get install ros-${ROS_DISTRO}-ros-gz  -->
+<!-- gz sim simple.sdf -->
 <?xml version="1.0" ?>
 <sdf version="1.10">
     <world name="car_world">
@@ -95,6 +97,7 @@
                 </box>
             </geometry>
           </collision>
+          <!-- gz topic -e -t /imu -->
           <!-- ros2 run ros_gz_bridge parameter_bridge /imu@sensor_msgs/msg/Imu@gz.msgs.IMU -->
           <sensor name="imu_sensor" type="imu">
             <always_on>1</always_on>
