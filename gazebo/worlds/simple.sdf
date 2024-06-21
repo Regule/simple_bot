@@ -150,6 +150,7 @@
           </sensor>
 
           <!-- LIDAR -->
+          <!-- sudo apt-get install libnvidia-egl-wayland1 -->
           <sensor name='gpu_lidar' type='gpu_lidar'>"
             <pose relative_to='lidar_frame'>0 0 0 0 0 0</pose>
             <topic>lidar</topic>
