@@ -1,8 +1,9 @@
-<!-- sudo apt-get install ros-${ROS_DISTRO}-ros-gz  -->
-<!-- gz sim simple.sdf -->
 <?xml version="1.0" ?>
 <sdf version="1.10">
     <world name="car_world">
+
+    <!-- sudo apt-get install ros-${ROS_DISTRO}-ros-gz  -->
+    <!-- gz sim simple.sdf -->
 
         <!-- General Gazeebo stuff -->
         <physics name="1ms" type="ignored">
@@ -24,6 +25,10 @@
 
         <!-- Sensor plugins -->
         <plugin filename="gz-sim-imu-system" name="gz::sim::systems::Imu">
+        </plugin>
+
+        <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
+          <render_engine>ogre2</render_engine>
         </plugin>
 
         <!-- Basic environment -->
@@ -67,9 +72,41 @@
             </link>
         </model>
 
+        <model name='wall'>
+          <static>true</static>
+          <pose>5 0 0 0 0 0</pose><!--pose relative to the world-->
+          <link name='box'>
+            <visual name='visual'>
+              <geometry>
+                <box>
+                  <size>0.5 10.0 2.0</size>
+                </box>
+              </geometry>
+              <!--let's add color to our link-->
+              <material>
+                <ambient>0.0 0.0 1.0 1</ambient>
+                <diffuse>0.0 0.0 1.0 1</diffuse>
+                <specular>0.0 0.0 1.0 1</specular>
+              </material>
+            </visual>
+            <collision name='collision'>
+              <geometry>
+                <box>
+                  <size>0.5 10.0 2.0</size>
+                </box>
+              </geometry>
+            </collision>
+          </link>
+        </model>
+
         <!-- Robot -->
         <model name='vehicle_blue' canonical_link='chassis'>
           <pose relative_to='world'>0 0 0 0 0 0</pose>
+
+          <frame name="lidar_frame" attached_to='chassis'>
+            <pose>0.8 0 0.5 0 0 0</pose>
+          </frame>
+
           <link name='chassis'>
             <pose relative_to='__model__'>0.5 0 0.4 0 0 0</pose>
             <inertial> <!--inertial properties of the link mass, inertia matix-->
@@ -111,7 +148,38 @@
             <visualize>true</visualize>
             <topic>imu</topic>
           </sensor>
+
+          <!-- LIDAR -->
+          <sensor name='gpu_lidar' type='gpu_lidar'>"
+            <pose relative_to='lidar_frame'>0 0 0 0 0 0</pose>
+            <topic>lidar</topic>
+            <update_rate>10</update_rate>
+            <ray>
+              <scan>
+                <horizontal>
+                  <samples>640</samples>
+                  <resolution>1</resolution>
+                  <min_angle>-1.396263</min_angle>
+                  <max_angle>1.396263</max_angle>
+                </horizontal>
+                <vertical>
+                  <samples>1</samples>
+                  <resolution>0.01</resolution>
+                  <min_angle>0</min_angle>
+                  <max_angle>0</max_angle>
+                </vertical>
+              </scan>
+              <range>
+                <min>0.08</min>
+                <max>10.0</max>
+                <resolution>0.01</resolution>
+              </range>
+            </ray>
+            <always_on>1</always_on>
+            <visualize>true</visualize>
+          </sensor>
         </link>
+
         <link name='left_wheel'>
           <pose relative_to="chassis">-0.5 0.6 0 -1.5707 0 0</pose>
           <inertial>
@@ -248,6 +316,8 @@
           <parent>chassis</parent>
           <child>caster</child>
         </joint>
+
+
 
         <!-- ROBOT VELOCITY SUBSCRIBER -->
         <plugin filename="gz-sim-diff-drive-system" name="gz::sim::systems::DiffDrive">
