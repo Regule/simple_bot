@@ -21,15 +21,18 @@ set(dependencies
 add_executable(tiny_node src/tiny_node.cpp)
 add_executable(small_node_pub src/small_node_pub.cpp)
 add_executable(small_node_sub src/small_node_sub.cpp)
+add_executable(parametrized_publisher src/parametrized_publisher.cpp)
 
 ament_target_dependencies(tiny_node ${dependencies})
 ament_target_dependencies(small_node_pub ${dependencies})
 ament_target_dependencies(small_node_sub ${dependencies})
+ament_target_dependencies(parametrized_publisher ${dependencies})
 
 install(TARGETS
   tiny_node
   small_node_pub
   small_node_sub
+  parametrized_publisher
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
