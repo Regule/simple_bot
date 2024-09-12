@@ -27,9 +27,9 @@ class PyPublisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    minimal_publisher = MinimalPublisher()
-    rclpy.spin(minimal_publisher)
-    minimal_publisher.destroy_node()
+    py_pub = PyPublisher()
+    rclpy.spin(py_pub)
+    py_pub.destroy_node()
     rclpy.shutdown()
 
 
