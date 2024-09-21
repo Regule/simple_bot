@@ -38,12 +38,61 @@ W parametrach "ament_cmake" oznacza że będzie to pakiet oparty o CMake, altern
 Dodatkowo można domyślnie zadeklarować rodzaj licencji, ostatnim parametrem jest nazwa węzła.
 
 Tak utworzony pakiet zawierał będzie trzy pliki
-* package.xml - informacje dla ROS2 odnośnie pakietu
-* CMakeLists.txt - plik dla CMake informujący o źródłach, folderach docelowych oraz zależnościach
-* LICENSE - treść licencji oprogramowania, w tym przypadku Apache-2.0
+
+    * package.xml - informacje dla ROS2 odnośnie pakietu
+    * CMakeLists.txt - plik dla CMake informujący o źródłach, folderach docelowych oraz zależnościach
+    * LICENSE - treść licencji oprogramowania, w tym przypadku Apache-2.0
 
 Większość zmian w pakiecie będzie wymagała aktualizacji zarówno package.xml jak i CMakeLists.txt.
 Poza tymi plikami w katalogu projektu znajdują się następujące foldery 
-* include - z jednym podfloderem którego nazwa odpowiada nazwie pakietu, tutaj znajdą się pliki
-            nagłówkowe umożliwiające innym pakietom korzystanie z jego zasobów.
-* src - folder z plikami źródłowymi
+
+    * include - z jednym podfloderem którego nazwa odpowiada nazwie pakietu, tutaj znajdą się pliki
+                nagłówkowe umożliwiające innym pakietom korzystanie z jego zasobów.
+    * src - folder z plikami źródłowymi
+
+
+Kod źródłowy węzła
+==================
+W celu stworznia wezła musimy umieścić jego kod źródłowy w katalogu src a następnie 
+zaktualizować plik CMakeLists.txt żeby uwzględniał jego istnienie.
+W naszym przykładzie nazwiemy ten plik tiny_node.cpp.
+Najmiejszy kod który jest w stanie funkcjonować jako węzeł ROS2 wygląda następująco::
+
+    #include "rclcpp/rclcpp.hpp"
+
+    int main(int argc, char **argv) {
+        rclcpp::init(argc, argv);
+        auto node = rclcpp::Node::make_shared("tiny_node");
+        rclcpp::spin(node);
+        rclcpp::shutdown();
+        return 0;
+    }
+
+Pierwsza linia załącza nagłowek zawierający podstawowe funkcjonalności ROS2, znajdują się 
+one w przestrzeni nazw "rclcpp".
+Pierwsza funkcja::
+    
+    rclcpp::init(argc, argv);
+
+incjalizuje globalny kontekts ROS2 dla danego wątku. 
+Kontekst ten jest niezbędny dla większości pozostałych funkcjonalności w tym możliwości 
+tworzenia węzłow. Dodatkowo zapewnia on obsłógę sygnałów co umożliwia przerwanie działania 
+programu za pomocą kombinacji Ctrl+C.
+
+Następnie za pomocą linii::
+
+    auto node = rclcpp::Node::make_shared("tiny_node");
+
+tworzymy obiekt węzła.
+W tym przypadku używamy bezpośrednio klasy Node, tak naprawdę w rzeczywistych zastosowaniach
+będziemy zawsze kożystać z wyspecjalizowanych klas dziedziczących po Node ponieważ sama klasa
+Node zapewnia jedynie najbardziej podstwowe funkcjonalności węzła.
+Metoda statyczna "make_shared" obudowuje "make_shared<Type>(constructor_arguments)" i umożliwia
+bardziej wygodne tworzenie wskaźników do węzłów.
+
+Następnie na obiekcie węzła zostaje wywołana funkcja::
+
+    rclcpp::spin(node);
+
+która uruchamia węzeł.
+W tej chwili 
