@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+    <world name="empty_world">
+
+        <!-- The physics tag specifies the type and properties of the dynamic engine. -->
+        <physics name="1ms" type="ignored">
+            <!-- Maximum time at which every system in simulation can interact with 
+                 the states of the world. The smaller the value, the more accurate calculations
+                 at cost of computation power.  -->
+            <max_step_size>0.001</max_step_size>
+            
+            <!--  Ratio of simulation time to real time -->
+            <real_time_factor>1.0</real_time_factor>
+        </physics>
+
+        <plugin
+            filename="gz-sim-physics-system"
+            name="gz::sim::systems::Physics"
+        >
+        </plugin>
+
+        <!-- Plugin is responsible for creating models, moving models, 
+             deleting them and many other user commands. -->
+        <plugin
+            filename="gz-sim-user-commands-system"
+            name="gz::sim::systems::UserCommands"
+        >
+        </plugin>
+
+        <plugin
+            filename="gz-sim-scene-broadcaster-system"
+            name="gz::sim::systems::SceneBroadcaster">
+        </plugin>
+
+    </world>
+</sdf>
