@@ -14,10 +14,12 @@ public:
   SmallNodeSubscriber(); // Constructor
 
 private:
-  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_; // Subscription to receive messages
+  rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_; // Subscription to
+                                                                        // receive messages
 
 private:
-  void subscription_callback_(std_msgs::msg::String::UniquePtr msg); // Callback function for received messages
+  void subscription_callback_(std_msgs::msg::String::UniquePtr msg); // Callback function for 
+                                                                     // received messages
 };
 
 // Constructor implementation

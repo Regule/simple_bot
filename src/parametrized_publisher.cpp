@@ -14,7 +14,8 @@ public:
 
 private:
   rclcpp::TimerBase::SharedPtr timer_;   // Shared pointer to a ROS 2 timer
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;    // Shared pointer to a ROS 2 publisher
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;    // Shared pointer 
+                                                                     // to a ROS 2 publisher
   size_t counter_;    // Counter variable to keep track of messages published
 
 private:
@@ -28,7 +29,8 @@ ParametrizedPublisher::ParametrizedPublisher() : Node("parametrized_publisher"),
   // Set the description for the parameter descriptor
   param_desc.description = "Parameter description, this is optional";
 
-  // Declare a parameter with name "demo_parameter", default value "default value", and the parameter descriptor
+  // Declare a parameter with name "demo_parameter", default value "default value",
+  // and the parameter descriptor
   this->declare_parameter("demo_parameter", "default value", param_desc);
 
   // Initialize the publisher with the node, specifying the topic name and queue size
@@ -37,7 +39,8 @@ ParametrizedPublisher::ParametrizedPublisher() : Node("parametrized_publisher"),
 
   // Create a timer with a callback function, setting the timer duration to 500 milliseconds
   // The timer callback will be executed every 500 milliseconds
-  // std::bind creates a function object that binds the member function timer_callback_() to this instance of ParametrizedPublisher
+  // std::bind creates a function object that binds the member function timer_callback_() 
+  // to this instance of ParametrizedPublisher
   timer_ = this->create_wall_timer(std::chrono::milliseconds(500),
                                    std::bind(&ParametrizedPublisher::timer_callback_, this));
 }
@@ -61,7 +64,8 @@ void ParametrizedPublisher::timer_callback_() {
   counter_++;
 
   // Assign the constructed string to the message data field
-  // Note that str() returns a copy of the stream contents, so future modifications of the stream will not affect message.data
+  // Note that str() returns a copy of the stream contents, so future modifications 
+  // of the stream will not affect message.data
   message.data = str_stream.str();
 
   // Log a message indicating the content being published

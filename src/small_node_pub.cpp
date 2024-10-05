@@ -14,14 +14,16 @@ public:
 
 private:
   rclcpp::TimerBase::SharedPtr timer_;   // Shared pointer to a ROS 2 timer
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;    // Shared pointer to a ROS 2 publisher
+  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;    // Shared pointer
+                                                                     // to a ROS 2 publisher
   size_t counter_;    // Counter variable to keep track of messages published
 
 private:
   void timer_callback_();   // Private method declaration for the timer callback function
 };
 
-SmallNodePublisher::SmallNodePublisher(): Node("small_node_publisher"), counter_(0) {   // Constructor definition
+// Constructor definition
+SmallNodePublisher::SmallNodePublisher(): Node("small_node_publisher"), counter_(0) {   
 
   // Initialize the publisher with the node, specifying the topic name and queue size.
   // In this case we will use a hardcoded topic name, however this is a bad practice.
