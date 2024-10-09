@@ -9,29 +9,36 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
+find_package(example_interfaces REQUIRED)
 
 set(dependencies
   rclcpp
   std_msgs
+  sensor_msgs
+  example_interfaces
 )
 
 add_executable(tiny_node src/tiny_node.cpp)
 add_executable(small_node_pub src/small_node_pub.cpp)
 add_executable(small_node_sub src/small_node_sub.cpp)
 add_executable(parametrized_publisher src/parametrized_publisher.cpp)
+add_executable(fake_lidar src/fake_lidar.cpp)
 
 ament_target_dependencies(tiny_node ${dependencies})
 ament_target_dependencies(small_node_pub ${dependencies})
 ament_target_dependencies(small_node_sub ${dependencies})
 ament_target_dependencies(parametrized_publisher ${dependencies})
+ament_target_dependencies(fake_lidar ${dependencies})
 
 install(TARGETS
   tiny_node
   small_node_pub
   small_node_sub
   parametrized_publisher
+  fake_lidar
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION lib/${PROJECT_NAME}
