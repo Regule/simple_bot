@@ -52,6 +52,8 @@ public:
     void declare_parameters(rclcpp::Node *node);
     void update_parameters(rclcpp::Node *node);
     int get_sampling_period_ms() const;
+    double get_angle_increment() const;
+    double get_range_scope() const;
 };
 
 
@@ -84,6 +86,16 @@ int LidarConfig::get_sampling_period_ms() const
     return std::lround(MILLISECONDS_PER_SECOND/sample_frequency);
 }
 
+double LidarConfig::get_angle_increment() const
+{
+    return (angle.second - angle.first) / sample_count;
+}
+
+double LidarConfig::get_range_scope() const
+{
+    return range.first + (range.
+}
+
 //=================================================================================================
 //                                       FAKE LIDAR 
 //=================================================================================================
@@ -98,40 +110,53 @@ private:
     rclcpp::TimerBase::SharedPtr _lidar_timer;
 
 private:
-  void publish_lidar_scan()
-  {
+
+    void FakeLidar::_publish_lidar_scan();
+    sensor_msgs::msg::LaserScan _prepare_lidar_message_with_metainfo() const;
+    std::vector<float> _prepare_fake_scan() const;
+
+};
+    
+sensor_msgs::msg::LaserScan FakeLidar::_prepare_lidar_message_with_metainfo() const
+{
     auto message = sensor_msgs::msg::LaserScan();
 
-    // Set the header with timestamp and frame
     message.header.stamp = this->now();
     message.header.frame_id = "laser_frame";
 
-    // Set the laser scan parameters
-    message.angle_min = angle_min_;
-    message.angle_max = angle_max_;
-    message.angle_increment = (angle_max_ - angle_min_) / num_readings_;
+    message.angle_min = _config.angle.first;
+    message.angle_max = _config.angle.second;
+    message.angle_increment = _config.get_angle_increment();
     message.time_increment = 0.0;
-    message.scan_time = 1.0 / 10.0; // 10 Hz
-    message.range_min = range_min_;
-    message.range_max = range_max_;
+    message.scan_time = _config.get_scan_period_ms();
+    message.range_min =  _config.range.first;
+    message.range_max = _config.range.second;
 
-    // Generate fake range data
+    return message;
+}
+    
+std::vector<float> FakeLidar::_prepare_fake_scan() const
+{
     std::vector<float> ranges(num_readings_);
     for(int i = 0; i < num_readings_; ++i)
     {
-      // Simulate ranges with a sinusoidal pattern
-      ranges[i] = range_min_ + (range_max_ - range_min_) * (std::sin(i * 0.1) + 1) / 2;
+      ranges[i] = _config.range.first + (_config.range.first - _config.range.second) *
+            (std::sin(i * 0.1) + 1) / 2;
     }
+    return ranges;
+}
 
+void FakeLidar::publish_lidar_scan()
+{
+    auto message = _prepare_lidar_message_with_metainfo();
+
+    // Generate fake range data
     // Assign the ranges to the message
     message.ranges = ranges;
 
     // Publish the message
     lidar_publisher_->publish(message);
   }
-
-
-};
 
 FakeLidarNode::FakeLidarNode() : Node("fake_lidar_node")
 {
