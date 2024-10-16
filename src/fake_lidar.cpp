@@ -51,6 +51,7 @@ public:
 public:
     void declare_parameters(rclcpp::Node *node);
     void update_parameters(rclcpp::Node *node);
+    void print_parameters(rclcpp::Node *node) const;
     int get_sampling_period_ms() const;
     double get_angle_increment() const;
     double get_scaled_range(double scale) const;
@@ -70,6 +71,8 @@ void LidarConfig::declare_parameters(rclcpp::Node *node)
     node->declare_parameter(PARAM_MAX_ANGLE, DEFAULT_MAX_ANGLE, descriptor);
     descriptor.description = DESCRIPTION_SAMPLE_COUNT;
     node->declare_parameter(PARAM_SAMPLE_COUNT, DEFAULT_SAMPLE_COUNT, descriptor);
+    descriptor.description = DESCRIPTION_SAMPLING_FREQUENCY;
+    node->declare_parameter(PARAM_SAMPLING_FREQUENCY, DEFAULT_SAMPLING_FREQUENCY, descriptor);
 }
 
 void LidarConfig::update_parameters(rclcpp::Node *node)
@@ -79,6 +82,17 @@ void LidarConfig::update_parameters(rclcpp::Node *node)
     this->angle.first  = node->get_parameter(PARAM_MIN_ANGLE).as_double();
     this->angle.second = node->get_parameter(PARAM_MAX_ANGLE).as_double();
     this->sample_count = node->get_parameter(PARAM_SAMPLE_COUNT).as_int();
+    this->sampling_frequency = node->get_parameter(PARAM_SAMPLING_FREQUENCY).as_double();
+}
+
+void LidarConfig::print_parameters(rclcpp::Node *node) const
+{
+    RCLCPP_INFO(node->get_logger(), "%s = %f", PARAM_MIN_RANGE, this->range.first);
+    RCLCPP_INFO(node->get_logger(), "%s = %f", PARAM_MAX_RANGE, this->range.second);
+    RCLCPP_INFO(node->get_logger(), "%s = %f", PARAM_MIN_ANGLE, this->angle.first);
+    RCLCPP_INFO(node->get_logger(), "%s = %f", PARAM_MAX_ANGLE, this->angle.second);
+    RCLCPP_INFO(node->get_logger(), "%s = %d", PARAM_SAMPLE_COUNT, this->sample_count);
+    RCLCPP_INFO(node->get_logger(), "%s = %f", PARAM_SAMPLING_FREQUENCY, this->sampling_frequency);
 }
 
 int LidarConfig::get_sampling_period_ms() const 
@@ -121,6 +135,7 @@ FakeLidar::FakeLidar() : Node("fake_lidar_node")
 {
     _config.declare_parameters(this);
     _config.update_parameters(this);
+    _config.print_parameters(this);
     _lidar_publisher = this->create_publisher<sensor_msgs::msg::LaserScan>("/scan", 10);
     _lidar_timer = this->create_wall_timer(
         std::chrono::milliseconds(_config.get_sampling_period_ms()),
