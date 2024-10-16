@@ -35,7 +35,7 @@ public:
     "Largest range that can be measured.";
     const char* DESCRIPTION_MIN_ANGLE=
     "Angle at which measurements start.";
-    const char* DESCRIPTION_MIN_ANGLE=
+    const char* DESCRIPTION_MAX_ANGLE=
     "Angle at which measurements end.";
     const char* DESCRIPTION_SAMPLE_COUNT = 
     "Number of measurements in single lidar sweep.";
@@ -53,7 +53,7 @@ public:
     void update_parameters(rclcpp::Node *node);
     int get_sampling_period_ms() const;
     double get_angle_increment() const;
-    double get_range_scope() const;
+    double get_scaled_range(double scale) const;
 };
 
 
@@ -81,9 +81,9 @@ void LidarConfig::update_parameters(rclcpp::Node *node)
     this->sample_count = node->get_parameter(PARAM_SAMPLE_COUNT).as_int();
 }
 
-int LidarConfig::get_sampling_period_ms() const
+int LidarConfig::get_sampling_period_ms() const 
 {
-    return std::lround(MILLISECONDS_PER_SECOND/sample_frequency);
+    return std::lround(MILLISECONDS_PER_SECOND/sampling_frequency);
 }
 
 double LidarConfig::get_angle_increment() const
@@ -91,18 +91,18 @@ double LidarConfig::get_angle_increment() const
     return (angle.second - angle.first) / sample_count;
 }
 
-double LidarConfig::get_range_scope() const
+double LidarConfig::get_scaled_range(double scale) const 
 {
-    return range.first + (range.
+    return range.first + (range.second - range.first) * scale;
 }
 
 //=================================================================================================
 //                                       FAKE LIDAR 
 //=================================================================================================
-class FakeLidarNode : public rclcpp::Node
+class FakeLidar : public rclcpp::Node
 {
 public:
-    FakeLidarNode();
+    FakeLidar();
 
 private:
     LidarConfig _config;
@@ -111,11 +111,23 @@ private:
 
 private:
 
-    void FakeLidar::_publish_lidar_scan();
+    void _publish_lidar_scan();
     sensor_msgs::msg::LaserScan _prepare_lidar_message_with_metainfo() const;
     std::vector<float> _prepare_fake_scan() const;
 
 };
+
+FakeLidar::FakeLidar() : Node("fake_lidar_node")
+{
+    _config.declare_parameters(this);
+    _config.update_parameters(this);
+    _lidar_publisher = this->create_publisher<sensor_msgs::msg::LaserScan>("/scan", 10);
+    _lidar_timer = this->create_wall_timer(
+        std::chrono::milliseconds(_config.get_sampling_period_ms()),
+        std::bind(&FakeLidar::_publish_lidar_scan, this)
+    );
+
+}
     
 sensor_msgs::msg::LaserScan FakeLidar::_prepare_lidar_message_with_metainfo() const
 {
@@ -128,7 +140,7 @@ sensor_msgs::msg::LaserScan FakeLidar::_prepare_lidar_message_with_metainfo() co
     message.angle_max = _config.angle.second;
     message.angle_increment = _config.get_angle_increment();
     message.time_increment = 0.0;
-    message.scan_time = _config.get_scan_period_ms();
+    message.scan_time = _config.get_sampling_period_ms();
     message.range_min =  _config.range.first;
     message.range_max = _config.range.second;
 
@@ -137,38 +149,22 @@ sensor_msgs::msg::LaserScan FakeLidar::_prepare_lidar_message_with_metainfo() co
     
 std::vector<float> FakeLidar::_prepare_fake_scan() const
 {
-    std::vector<float> ranges(num_readings_);
-    for(int i = 0; i < num_readings_; ++i)
+    std::vector<float> ranges(_config.sample_count);
+    for(int i = 0; i < _config.sample_count; i++)
     {
-      ranges[i] = _config.range.first + (_config.range.first - _config.range.second) *
-            (std::sin(i * 0.1) + 1) / 2;
+        double scale = (std::sin(i * 0.1) + 1) / 2;
+        ranges[i] = _config.get_scaled_range(scale);
     }
     return ranges;
 }
 
-void FakeLidar::publish_lidar_scan()
+void FakeLidar::_publish_lidar_scan()
 {
     auto message = _prepare_lidar_message_with_metainfo();
-
-    // Generate fake range data
-    // Assign the ranges to the message
-    message.ranges = ranges;
-
-    // Publish the message
-    lidar_publisher_->publish(message);
-  }
-
-FakeLidarNode::FakeLidarNode() : Node("fake_lidar_node")
-{
-    _config.declare_parameters(this);
-    _config.update_parameters(this);
-    _lidar_publisher = this->create_publisher<sensor_msgs::msg::LaserScan>("/scan", 10);
-    _lidar_timer_ = this->create_wall_timer(
-        std::chrono::milliseconds(_config.get_sampling_period()),
-        std::bind(&FakeLidarNode::publish_lidar_scan, this)
-    );
-
+    message.ranges = _prepare_fake_scan();
+    _lidar_publisher->publish(message);
 }
+
 
 //=================================================================================================
 //                                      MAIN 
@@ -176,7 +172,7 @@ FakeLidarNode::FakeLidarNode() : Node("fake_lidar_node")
 int main(int argc, char *argv[])
 {
   rclcpp::init(argc, argv);
-  auto node = std::make_shared<FakeLidarNode>();
+  auto node = std::make_shared<FakeLidar>();
   rclcpp::spin(node);
   rclcpp::shutdown();
   return 0;
