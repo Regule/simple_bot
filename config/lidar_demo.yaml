@@ -1,0 +1,8 @@
+fake_lidar_node:
+  ros__parameters:
+    min_range: 0.2
+    max_range: 11.0
+    min_angle: -3.14
+    max_angle: 3.14
+    sample_count: 360
+    sampling_frequency: 10.0
